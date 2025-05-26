@@ -7,7 +7,7 @@ class Task {
   bool isDone;
 
   Task(this.title, {this.isDone = false});
-}gggggg 120
+}gggggg 1200
 
 class MyApp extends StatelessWidget {
   @override

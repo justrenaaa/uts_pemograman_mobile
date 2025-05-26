@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'To-Do List',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
+      theme: ThemeData(primarySwatch: Colors.deepPurple),
       home: ToDoHomePage(),
     );
   }
@@ -33,15 +31,11 @@ class ToDoHomePage extends StatefulWidget {
 class _ToDoHomePageState extends State<ToDoHomePage> {
   void _onSearchPressed() {
     print('Search button pressed');
-    // Tambahkan logika pencarian di sini jika diperlukan
+    // Tambahkan logika pencarian jika diperlukan
   }
 
   void _onAddPressed() {
-    // Navigasi ke halaman tambah todo
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TodoApp()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TodoApp()));
   }
 
   @override
@@ -54,10 +48,7 @@ class _ToDoHomePageState extends State<ToDoHomePage> {
             onPressed: _onSearchPressed,
             child: Text(
               'Search',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
           ),
         ],
@@ -78,7 +69,7 @@ class _ToDoHomePageState extends State<ToDoHomePage> {
 }
 
 // ==========================
-// Halaman Kedua (Tambah To-Do)
+// Halaman Kedua (Tambah Tugas)
 // ==========================
 class TodoApp extends StatefulWidget {
   @override
@@ -113,57 +104,69 @@ class _TodoAppState extends State<TodoApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('🟣 Tambah To-Do')),
+      appBar: AppBar(title: Text('🟣 Tambah Tugas')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Row(
+            // Label "Nama Tugas"
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      labelText: 'Tambahkan tugas',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                Text(
+                  'Nama Tugas',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: addTask,
-                  child: Text('Tambah'),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: 'Masukkan tugas anda',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    ElevatedButton(onPressed: addTask, child: Text('Tambah')),
+                  ],
                 ),
               ],
             ),
             SizedBox(height: 20),
+
+            // List tugas
             Expanded(
-              child: ListView.builder(
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  final task = tasks[index];
-                  return Card(
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: task.isDone,
-                        onChanged: (_) => toggleTask(index),
-                      ),
-                      title: Text(
-                        task.title,
-                        style: TextStyle(
-                          decoration: task.isDone
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => deleteTask(index),
-                      ),
+              child: tasks.isEmpty
+                  ? Center(child: Text('Belum ada tugas.'))
+                  : ListView.builder(
+                      itemCount: tasks.length,
+                      itemBuilder: (context, index) {
+                        final task = tasks[index];
+                        return Card(
+                          child: ListTile(
+                            leading: Checkbox(
+                              value: task.isDone,
+                              onChanged: (_) => toggleTask(index),
+                            ),
+                            title: Text(
+                              task.title,
+                              style: TextStyle(
+                                decoration: task.isDone
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => deleteTask(index),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

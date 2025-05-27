@@ -6,7 +6,7 @@ class Task {
   String title;
   bool isDone;
   DateTime createdAt;
-  DateTime? reminderDate; // Reminder nullable
+  DateTime? reminderDate;
 
   Task({
     required this.title,
@@ -24,30 +24,9 @@ class TaskFolder {
       : tasks = initialTasks ?? [];
 }
 
-// --- PROVIDER (STATE MANAGEMENT) ---
+// --- PROVIDER ---
 class TaskProvider extends ChangeNotifier {
-  final List<TaskFolder> _folders = [
-    TaskFolder(name: 'Pekerjaan', initialTasks: [
-      Task(
-          title: 'Rapat dengan Klien',
-          isDone: false,
-          createdAt: DateTime.now().subtract(const Duration(days: 2))),
-      Task(
-          title: 'Kirim Laporan Bulanan',
-          isDone: true,
-          createdAt: DateTime.now().subtract(const Duration(hours: 5))),
-    ]),
-    TaskFolder(name: 'Pribadi', initialTasks: [
-      Task(
-          title: 'Belanja Kebutuhan Dapur',
-          isDone: false,
-          createdAt: DateTime.now().subtract(const Duration(days: 1))),
-      Task(
-          title: 'Olahraga Pagi',
-          isDone: false,
-          createdAt: DateTime.now().subtract(const Duration(hours: 3))),
-    ]),
-  ];
+  final List<TaskFolder> _folders = [];
 
   List<TaskFolder> get folders => _folders;
 
@@ -92,7 +71,16 @@ class TaskProvider extends ChangeNotifier {
   }
 }
 
-// --- APLIKASI UTAMA ---
+// --- MAIN APP ---
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TaskProvider(),
+      child: const MyApp(),
+    ),
+  );
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -102,14 +90,6 @@ class MyApp extends StatelessWidget {
       title: 'Aplikasi To-Do List',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        ),
       ),
       home: const WelcomeScreen(),
       debugShowCheckedModeBanner: false,
@@ -117,68 +97,70 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// --- HALAMAN SELAMAT DATANG ---
-class WelcomeScreen extends StatefulWidget {
+// --- WELCOME SCREEN ---
+class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
-
-  @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
-}
-
-class _WelcomeScreenState extends State<WelcomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blueAccent,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(
-              Icons.checklist_rtl,
-              size: 100,
-              color: Colors.white,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'My Daily Tasks',
-              style: TextStyle(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.checklist_rtl,
+                size: 100,
                 color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
               ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Atur Hidupmu, Raih Tujuanmu',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 18,
+              const SizedBox(height: 20),
+              const Text(
+                'My Daily Tasks',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            SizedBox(height: 50),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ],
+              const SizedBox(height: 10),
+              const Text(
+                'Atur Hidupmu, Raih Tujuanmu',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+                child: const Text(
+                  'Mulai Yuk!',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// --- BERANDA (HOME SCREEN) ---
+// --- HOME SCREEN ---
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -189,29 +171,78 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   void _addFolder() {
     TextEditingController folderNameController = TextEditingController();
+    List<String> presetFolders = [
+      'Sekolah',
+      'Pekerjaan',
+      'Umum',
+      'Keluarga',
+      'Kesehatan',
+      'Belanja',
+      'Hobi',
+      'Proyek',
+      'Acara',
+      'Keuangan',
+      'Liburan',
+      'Lainnya',
+    ];
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Buat Folder Tugas Baru'),
-          content: TextField(
-            controller: folderNameController,
-            decoration: const InputDecoration(hintText: 'Nama Folder'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Provider.of<TaskProvider>(context, listen: false)
-                    .addFolder(folderNameController.text);
-                Navigator.pop(context);
-              },
-              child: const Text('Buat'),
-            ),
-          ],
+        String? selectedPreset;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Pilih atau Buat Folder Baru'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: selectedPreset,
+                      decoration: const InputDecoration(labelText: 'Pilih Folder Bawaan'),
+                      items: presetFolders.map((folder) {
+                        return DropdownMenuItem<String>(
+                          value: folder,
+                          child: Text(folder),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedPreset = value;
+                          folderNameController.text = value ?? '';
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: folderNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Atau Tulis Nama Folder Sendiri',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final folderName = folderNameController.text.trim();
+                    if (folderName.isNotEmpty) {
+                      Provider.of<TaskProvider>(context, listen: false)
+                          .addFolder(folderName);
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Buat'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -228,7 +259,8 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, taskProvider, child) {
           if (taskProvider.folders.isEmpty) {
             return const Center(
-                child: Text('Belum ada folder tugas. Buat folder baru!'));
+              child: Text('Belum ada folder tugas. Buat folder baru!'),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -266,14 +298,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addFolder,
-        tooltip: 'Tambah Folder Tugas Baru',
         child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-// --- HALAMAN DETAIL FOLDER ---
+// --- DETAIL FOLDER SCREEN ---
 class FolderDetailScreen extends StatefulWidget {
   final TaskFolder folder;
 
@@ -337,21 +368,19 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
             children: [
               TextField(
                 controller: _taskTitleController,
-                decoration: const InputDecoration(hintText: 'Nama Tugas'),
+                decoration: const InputDecoration(labelText: 'Judul Tugas'),
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      _selectedReminderDate == null
-                          ? 'Belum ada reminder'
-                          : 'Reminder: ${_selectedReminderDate!.day}/${_selectedReminderDate!.month}/${_selectedReminderDate!.year} ${_selectedReminderDate!.hour}:${_selectedReminderDate!.minute.toString().padLeft(2, '0')}',
-                    ),
+                    child: Text(_selectedReminderDate == null
+                        ? 'Tidak ada pengingat'
+                        : 'Ingatkan pada: ${_selectedReminderDate.toString().substring(0, 16)}'),
                   ),
-                  TextButton(
+                  IconButton(
+                    icon: const Icon(Icons.alarm),
                     onPressed: _pickReminderDate,
-                    child: const Text('Pilih Reminder'),
                   ),
                 ],
               ),
@@ -368,7 +397,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
             ),
             ElevatedButton(
               onPressed: _addTask,
-              child: const Text('Simpan'),
+              child: const Text('Tambah'),
             ),
           ],
         );
@@ -378,81 +407,64 @@ class _FolderDetailScreenState extends State<FolderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TaskProvider>(
-      builder: (context, taskProvider, child) {
-        final currentFolder = taskProvider.folders.firstWhere(
-            (f) => f.name == widget.folder.name,
-            orElse: () => TaskFolder(name: 'Folder Tidak Ditemukan'));
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Tugas di ${currentFolder.name}'),
-          ),
-          body: currentFolder.tasks.isEmpty
-              ? const Center(child: Text('Belum ada tugas di folder ini.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: currentFolder.tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = currentFolder.tasks[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: ListTile(
-                        leading: Checkbox(
-                          value: task.isDone,
-                          onChanged: (_) =>
-                              taskProvider.toggleTaskStatus(currentFolder, task),
-                        ),
-                        title: Text(
-                          task.title,
-                          style: TextStyle(
-                            decoration: task.isDone
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Dibuat: ${task.createdAt.day}/${task.createdAt.month}/${task.createdAt.year} ${task.createdAt.hour}:${task.createdAt.minute.toString().padLeft(2, '0')}',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            if (task.reminderDate != null)
-                              Text(
-                                'Reminder: ${task.reminderDate!.day}/${task.reminderDate!.month}/${task.reminderDate!.year} ${task.reminderDate!.hour}:${task.reminderDate!.minute.toString().padLeft(2, '0')}',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.red),
-                              ),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () =>
-                              taskProvider.deleteTaskFromFolder(currentFolder, task),
-                        ),
-                      ),
-                    );
-                  },
+    final tasks = widget.folder.tasks;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.folder.name),
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: tasks.length,
+        itemBuilder: (context, index) {
+          final task = tasks[index];
+          final createdAt = task.createdAt;
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            child: ListTile(
+              leading: IconButton(
+                icon: Icon(
+                  task.isDone
+                      ? Icons.check_box
+                      : Icons.check_box_outline_blank,
+                  color: task.isDone ? Colors.green : Colors.grey,
                 ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _showAddTaskDialog,
-            tooltip: 'Tambah Tugas Baru',
-            child: const Icon(Icons.add),
-          ),
-        );
-      },
+                onPressed: () {
+                  Provider.of<TaskProvider>(context, listen: false)
+                      .toggleTaskStatus(widget.folder, task);
+                },
+              ),
+              title: Text(
+                task.title,
+                style: TextStyle(
+                  decoration: task.isDone
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                  fontSize: 16,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Dibuat: ${createdAt.toLocal().toString().substring(0, 16)}'),
+                  if (task.reminderDate != null)
+                    Text('Pengingat: ${task.reminderDate!.toLocal().toString().substring(0, 16)}'),
+                ],
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () {
+                  Provider.of<TaskProvider>(context, listen: false)
+                      .deleteTaskFromFolder(widget.folder, task);
+                },
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddTaskDialog,
+        child: const Icon(Icons.add),
+      ),
     );
   }
-}
-
-// --- MAIN ---
-void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => TaskProvider(),
-      child: const MyApp(),
-    ),
-  );
 }
